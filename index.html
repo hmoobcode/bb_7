@@ -184,7 +184,6 @@
             text-align: left; 
         }
 
-        /* ปรับแต่งส่วนท้ายแถบแสดงหน้าและปุ่มกดเปลี่ยนหน้า */
         .page-indicator-bar {
             display: flex;
             align-items: center;
@@ -252,7 +251,6 @@
         </div>
         <div class="reader-content-container" id="reader-content">
         </div>
-        <!-- เพิ่มปุ่ม ⏪ และ ⏩ ข้างๆ ตัวเลขบอกหน้า -->
         <div class="page-indicator-bar">
             <button class="page-nav-btn" onclick="prevPage()" title="หน้าก่อนหน้า">⏪</button>
             <div class="page-indicator" id="page-indicator">หน้าที่ 1 / 1</div>
@@ -278,7 +276,7 @@
 
         function renderMenu() {
             const menuList = document.getElementById('menu-list');
-            menuList.innerHTML = '';
+            menuList.html = '';
             
             menus.forEach((menuText, index) => {
                 const item = document.createElement('div');
@@ -293,7 +291,8 @@
             currentChapter = index;
             currentPageIndex = 0; 
             
-            history.pushState({ screen: 'reader', chapter: index }, "");
+            // ดักจับและเพิ่ม state ไว้ใน history เพื่อดักปุ่ม Back ของเบราเซอร์/มือถือ
+            history.pushState({ screen: 'reader', chapter: index }, "", window.location.href);
 
             document.getElementById('home-screen').style.opacity = '0';
             setTimeout(() => {
@@ -304,6 +303,7 @@
         }
 
         function goHome() {
+            // เมื่อผู้ใช้กดปุ่ม "เมนู" ด้านบน ให้ทำการย้อนสถานะ history กลับหน้าหลักอย่างถูกต้อง
             if (document.getElementById('reader-screen').classList.contains('active')) {
                 window.history.back();
             } else {
@@ -319,12 +319,20 @@
             }, 50);
         }
 
+        // บล็อกปุ่ม Back (popstate) ไม่ให้หลุดออกนอกแอป แต่ให้พาผู้ใช้กลับมาที่หน้าเมนูหลักของแอปแทน
         window.addEventListener('popstate', function(event) {
             const readerScreen = document.getElementById('reader-screen');
             if (readerScreen.classList.contains('active')) {
+                // ถ้าอยู่ในหน้าอ่านเนื้อหา พอกดปุ่ม Back จะบังคับเด้งกลับมาที่หน้าเมนูหลักของแอป
                 executeGoHome();
+            } else {
+                // ถ้าอยู่ที่หน้าหลักแล้วพยายามกดปุ่ม Back อีก ให้ดันประวัติซ้ำเข้าไปใหม่เพื่อขัดขวางไม่ให้ออกจากเบราเซอร์/แอป
+                history.pushState({ screen: 'home' }, "", window.location.href);
             }
         });
+
+        // สร้าง history ตั้งต้นไว้ป้องกันการกดปุ่ม Back ออกจากเบราเซอร์ตั้งแต่เริ่มเปิดหน้าเว็บ
+        history.pushState({ screen: 'home' }, "", window.location.href);
 
         async function loadChapterContent(index, pageToDisplay = 0, targetScrollTop = 0) {
             const fileName = `ep${index + 1}.txt`; 
@@ -409,7 +417,6 @@
             }, 50);
         }
 
-        // ฟังก์ชันสำหรับกดปุ่มย้อนกลับและถัดไป
         function prevPage() {
             if (chapterPages.length === 0) return;
             currentPageIndex = (currentPageIndex - 1 + chapterPages.length) % chapterPages.length;
