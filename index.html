@@ -30,7 +30,6 @@
             background-position: center;
             display: flex;
             flex-direction: column;
-            /* เอา space-between ออก เพื่อให้ควบคุมระยะห่างแต่ละส่วนได้แม่นยำ */
             justify-content: flex-start;
             padding: 25px 20px;
             z-index: 10;
@@ -76,7 +75,6 @@
 
         .app-title-container {
             text-align: center;
-            /* ล็อคตำแหน่งให้อยู่ในกรอบด้านล่างตามรูปที่วงไว้ โดยใช้ margin-top ดันลงมา */
             position: absolute;
             bottom: 35px;
             left: 0;
@@ -186,13 +184,46 @@
             text-align: left; 
         }
 
-        .page-indicator {
-            text-align: center;
-            padding: 8px;
+        /* ปรับแต่งส่วนท้ายแถบแสดงหน้าและปุ่มกดเปลี่ยนหน้า */
+        .page-indicator-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 8px 15px;
             background: #f4f1ea;
-            font-size: 13px;
-            color: #666;
             border-top: 1px solid #e0dbce;
+        }
+
+        .page-indicator {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .page-nav-btn {
+            background: #4a3b32;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            width: 38px;
+            height: 32px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .page-nav-btn:hover {
+            background: #5c3a21;
+        }
+
+        .page-nav-btn:active {
+            background: #352923;
         }
 
         .hidden {
@@ -221,7 +252,12 @@
         </div>
         <div class="reader-content-container" id="reader-content">
         </div>
-        <div class="page-indicator" id="page-indicator">หน้าที่ 1 / 1</div>
+        <!-- เพิ่มปุ่ม ⏪ และ ⏩ ข้างๆ ตัวเลขบอกหน้า -->
+        <div class="page-indicator-bar">
+            <button class="page-nav-btn" onclick="prevPage()" title="หน้าก่อนหน้า">⏪</button>
+            <div class="page-indicator" id="page-indicator">หน้าที่ 1 / 1</div>
+            <button class="page-nav-btn" onclick="nextPage()" title="หน้าถัดไป">⏩</button>
+        </div>
     </div>
 
     <script>
@@ -373,6 +409,19 @@
             }, 50);
         }
 
+        // ฟังก์ชันสำหรับกดปุ่มย้อนกลับและถัดไป
+        function prevPage() {
+            if (chapterPages.length === 0) return;
+            currentPageIndex = (currentPageIndex - 1 + chapterPages.length) % chapterPages.length;
+            displayCurrentPage(0);
+        }
+
+        function nextPage() {
+            if (chapterPages.length === 0) return;
+            currentPageIndex = (currentPageIndex + 1) % chapterPages.length;
+            displayCurrentPage(0);
+        }
+
         let touchStartX = 0;
         let touchStartY = 0;
         let touchEndX = 0;
@@ -433,11 +482,9 @@
 
             if (Math.abs(diffX) > swipeThreshold && diffY < 40) {
                 if (diffX < 0) {
-                    currentPageIndex = (currentPageIndex + 1) % chapterPages.length;
-                    displayCurrentPage(0);
+                    nextPage();
                 } else {
-                    currentPageIndex = (currentPageIndex - 1 + chapterPages.length) % chapterPages.length;
-                    displayCurrentPage(0);
+                    prevPage();
                 }
             }
         }
