@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>เจ็ดคริสตจักร - Seven Churches</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f4f1ea;
+        }
+
+        #home-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            /* เอา space-between ออก เพื่อให้ควบคุมระยะห่างแต่ละส่วนได้แม่นยำ */
+            justify-content: flex-start;
+            padding: 25px 20px;
+            z-index: 10;
+            transition: opacity 0.4s ease;
+        }
+
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            margin-top: 0.5in;
+            margin-left: 5px; 
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            overflow: hidden;
+            width: 220px; 
+            max-width: 100%;
+            align-self: flex-start; 
+        }
+
+        .menu-item {
+            background: transparent;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 19px; 
+            color: #1a5c22;
+            transition: background 0.2s;
+            border-left: 4px solid #2e7d32;
+            border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(46, 125, 50, 0.1);
+        }
+
+        .app-title-container {
+            text-align: center;
+            /* ล็อคตำแหน่งให้อยู่ในกรอบด้านล่างตามรูปที่วงไว้ โดยใช้ margin-top ดันลงมา */
+            position: absolute;
+            bottom: 35px;
+            left: 0;
+            width: 100%;
+        }
+
+        .app-title {
+            font-size: 38px;
+            font-weight: bold;
+            color: #d32f2f;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        #reader-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #faf8f5;
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        #reader-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .reader-header {
+            background-color: #4a3b32;
+            color: #fff;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .reader-title-wrapper {
+            flex-grow: 1;
+            overflow: hidden; 
+            position: relative;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reader-title {
+            font-size: 17px;
+            font-weight: bold;
+            white-space: nowrap;
+            color: #fff;
+            position: relative;
+        }
+
+        @keyframes one-way-slide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(var(--overflow-width) * -1)); }
+        }
+
+        .reader-title.scrolling {
+            position: absolute !important;
+            left: 0;
+            animation: one-way-slide 10s linear infinite;
+        }
+
+        .reader-content-container {
+            flex-grow: 1;
+            padding: 25px 20px;
+            overflow-y: auto;
+            line-height: 1.8;
+            color: #2c2c2c;
+            font-size: 16px; 
+            background: #fdfbf7;
+        }
+
+        .content-heading {
+            font-weight: bold;
+            font-size: 1.1em; 
+            color: #5c3a21;
+            margin-top: 10px;
+            margin-bottom: 8px;
+        }
+
+        .content-paragraph {
+            text-indent: 2em;
+            margin-bottom: 0px;
+            text-align: left; 
+        }
+
+        .page-indicator {
+            text-align: center;
+            padding: 8px;
+            background: #f4f1ea;
+            font-size: 13px;
+            color: #666;
+            border-top: 1px solid #e0dbce;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen">
+        <div class="menu-container" id="menu-list">
+        </div>
+
+        <div class="app-title-container">
+            <h1 class="app-title" id="app-title-text">เจ็ดคริสตจักร</h1>
+        </div>
+    </div>
+
+    <div id="reader-screen">
+        <div class="reader-header">
+            <button class="back-btn" onclick="goHome()">&#10094; <span id="back-text">เมนู</span></button>
+            <div class="reader-title-wrapper" id="title-wrapper">
+                <div class="reader-title" id="book-title">ชื่อเรื่อง</div>
+            </div>
+            <div style="width: 45px;"></div>
+        </div>
+        <div class="reader-content-container" id="reader-content">
+        </div>
+        <div class="page-indicator" id="page-indicator">หน้าที่ 1 / 1</div>
+    </div>
+
+    <script>
+        const menus = [
+            "คริสตจักรเอเฟซัส",
+            "คริสตจักรสเมอร์น่า",
+            "คริสตจักรเปอร์กามัม",
+            "คริสตจักรธียาทิรา",
+            "คริสตจักรซาร์ดิส",
+            "คริสตจักรฟีลาเดลเฟีย",
+            "คริสตจักรเลาดีเซีย"
+        ];
+
+        let currentChapter = 0; 
+        let chapterPages = [];  
+        let currentPageIndex = 0; 
+        let currentFontSize = 16; 
+
+        function renderMenu() {
+            const menuList = document.getElementById('menu-list');
+            menuList.innerHTML = '';
+            
+            menus.forEach((menuText, index) => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.innerText = menuText;
+                item.onclick = () => openChapter(index);
+                menuList.appendChild(item);
+            });
+        }
+
+        function openChapter(index) {
+            currentChapter = index;
+            currentPageIndex = 0; 
+            
+            history.pushState({ screen: 'reader', chapter: index }, "");
+
+            document.getElementById('home-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('home-screen').classList.add('hidden');
+                document.getElementById('reader-screen').classList.add('active');
+                loadChapterContent(currentChapter, currentPageIndex, 0);
+            }, 300);
+        }
+
+        function goHome() {
+            if (document.getElementById('reader-screen').classList.contains('active')) {
+                window.history.back();
+            } else {
+                executeGoHome();
+            }
+        }
+
+        function executeGoHome() {
+            document.getElementById('reader-screen').classList.remove('active');
+            document.getElementById('home-screen').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('home-screen').style.opacity = '1';
+            }, 50);
+        }
+
+        window.addEventListener('popstate', function(event) {
+            const readerScreen = document.getElementById('reader-screen');
+            if (readerScreen.classList.contains('active')) {
+                executeGoHome();
+            }
+        });
+
+        async function loadChapterContent(index, pageToDisplay = 0, targetScrollTop = 0) {
+            const fileName = `ep${index + 1}.txt`; 
+            const filePath = fileName;
+
+            try {
+                const response = await fetch(filePath);
+                if (!response.ok) throw new Error(`ไม่พบไฟล์ ${filePath}`);
+                const text = await response.text();
+                processTextIntoPages(text, index);
+            } catch (error) {
+                console.warn(error);
+                const sampleText = `[${menus[index]}]\n{หัวข้อบทที่ ${index + 1}}\nนี่คือเนื้อหาตัวอย่างบรรทัดแรกสำหรับไฟล์ ${filePath}\n[ชื่อเรื่องยาวมากๆ เพื่อทดสอบระบบซ่อนส่วนที่เกินทางขวาและสไลด์ชื่อเรื่อง]\n{ตัวอย่างหัวข้อ}\nนี่คือเนื้อหาหน้าย่อยที่ 2 เพื่อทดสอบระบบหมุนเวียน`;
+                processTextIntoPages(sampleText, index);
+            }
+
+            if (pageToDisplay >= chapterPages.length) pageToDisplay = 0;
+            currentPageIndex = pageToDisplay;
+            displayCurrentPage(targetScrollTop);
+        }
+
+        function processTextIntoPages(rawText, index) {
+            const lines = rawText.split(/\r?\n/);
+            chapterPages = [];
+            let currentPage = { title: menus[index], content: "" };
+
+            lines.forEach(line => {
+                let trimmed = line.trim();
+                if (!trimmed) return;
+
+                if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                    if (currentPage.content !== "" || currentPage.title !== menus[index]) {
+                        chapterPages.push(currentPage);
+                    }
+                    currentPage = {
+                        title: trimmed.substring(1, trimmed.length - 1),
+                        content: ""
+                    };
+                } 
+                else if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                    let headingText = trimmed.substring(1, trimmed.length - 1);
+                    currentPage.content += `<div class="content-heading">${headingText}</div>`;
+                } 
+                else {
+                    let formattedLine = line.replace(/ {2,}/g, match => '&nbsp;'.repeat(match.length));
+                    currentPage.content += `<p class="content-paragraph">${formattedLine}</p>`;
+                }
+            });
+
+            if (currentPage.content !== "" || chapterPages.length === 0) {
+                chapterPages.push(currentPage);
+            }
+        }
+
+        function displayCurrentPage(targetScrollTop = 0) {
+            if (chapterPages.length === 0) return;
+            
+            const page = chapterPages[currentPageIndex];
+            const titleElem = document.getElementById('book-title');
+            const wrapperElem = document.getElementById('title-wrapper');
+            const contentContainer = document.getElementById('reader-content');
+
+            titleElem.innerText = page.title;
+            contentContainer.innerHTML = page.content;
+            contentContainer.style.fontSize = currentFontSize + 'px'; 
+            document.getElementById('page-indicator').innerText = `หน้าที่ ${currentPageIndex + 1} / ${chapterPages.length}`;
+            
+            contentContainer.scrollTop = targetScrollTop;
+
+            titleElem.classList.remove('scrolling');
+            wrapperElem.style.justifyContent = 'center';
+
+            setTimeout(() => {
+                if (titleElem.scrollWidth > wrapperElem.clientWidth) {
+                    wrapperElem.style.justifyContent = 'flex-start';
+                    const overflowAmount = titleElem.scrollWidth - wrapperElem.clientWidth + 15;
+                    titleElem.style.setProperty('--overflow-width', overflowAmount + 'px');
+                    titleElem.classList.add('scrolling');
+                } else {
+                    wrapperElem.style.justifyContent = 'center';
+                }
+            }, 50);
+        }
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        
+        let initialPinchDistance = null;
+        let baseFontSize = currentFontSize;
+
+        const readerScreen = document.getElementById('reader-screen');
+        const readerContent = document.getElementById('reader-content');
+
+        readerScreen.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                baseFontSize = currentFontSize;
+            } else if (e.touches.length === 1) {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }
+        }, { passive: true });
+
+        readerScreen.addEventListener('touchmove', e => {
+            if (e.touches.length === 2 && initialPinchDistance !== null) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+
+                const scale = currentDistance / initialPinchDistance;
+                let newSize = Math.round(baseFontSize * scale);
+
+                if (newSize < 12) newSize = 12;
+                if (newSize > 36) newSize = 36;
+
+                currentFontSize = newSize;
+                readerContent.style.fontSize = currentFontSize + 'px';
+            }
+        }, { passive: true });
+
+        readerScreen.addEventListener('touchend', e => {
+            if (e.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+            if (e.changedTouches.length === 1 && initialPinchDistance === null) {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                handleSwipe();
+            }
+        }, { passive: false });
+
+        function handleSwipe() {
+            const swipeThreshold = 60; 
+            const diffX = touchEndX - touchStartX;
+            const diffY = Math.abs(touchEndY - touchStartY); 
+
+            if (Math.abs(diffX) > swipeThreshold && diffY < 40) {
+                if (diffX < 0) {
+                    currentPageIndex = (currentPageIndex + 1) % chapterPages.length;
+                    displayCurrentPage(0);
+                } else {
+                    currentPageIndex = (currentPageIndex - 1 + chapterPages.length) % chapterPages.length;
+                    displayCurrentPage(0);
+                }
+            }
+        }
+
+        renderMenu();
+    </script>
+</body>
+</html>
